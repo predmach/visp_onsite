@@ -1,0 +1,133 @@
+
+==========================================================
+General configuration information for ViSP 3.2.0
+
+  Version control:               3.1.0-380-g21290bc-dirty
+
+  Platform:
+    Timestamp:                   2018-07-22T18:34:33Z
+    Host:                        Linux 4.13.13-rt5 x86_64
+    CMake:                       3.12.0
+    CMake generator:             Unix Makefiles
+    CMake build tool:            /usr/bin/make
+    Configuration:               Debug
+
+  C/C++:
+    Built as dynamic libs?:      yes
+    C++ Compiler:                /usr/bin/c++  (ver 5.4.0)
+    C++ flags (Release):         -Wall -Wextra -fopenmp -std=c++11 -fvisibility=hidden -msse2 -msse3 -mssse3 -fPIC -O3 -DNDEBUG
+    C++ flags (Debug):           -Wall -Wextra -fopenmp -std=c++11 -fvisibility=hidden -msse2 -msse3 -mssse3 -fPIC -g
+    C Compiler:                  /usr/bin/c99-gcc
+    C flags (Release):           -Wall -Wextra -fopenmp -std=c++11 -fvisibility=hidden -msse2 -msse3 -mssse3 -fPIC -O3 -DNDEBUG
+    C flags (Debug):             -Wall -Wextra -fopenmp -std=c++11 -fvisibility=hidden -msse2 -msse3 -mssse3 -fPIC -g
+    Linker flags (Release):      
+    Linker flags (Debug):        
+
+  ViSP modules:
+    To be built:                 core gui imgproc io java_bindings_generator klt me sensor ar blob robot visual_features vs vision detection mbt tt tt_mi
+    Disabled:                    -
+    Disabled by dependency:      -
+    Unavailable:                 java
+
+  Python (for build):            /usr/bin/python2.7
+
+  Java:                          
+    ant:                         NO
+    JNI:                         NO
+
+  Build options: 
+    Build deprecated:            yes
+    Build with moment combine:   no
+
+  Mathematics: 
+    Use Lapack/blas:             yes (ver 3.10.2)
+    Use Lapack (built-in):       no
+    Use Eigen3:                  yes (ver 3.2.92)
+    Use OpenCV:                  yes (ver 3.4.2)
+    Use GSL:                     no
+
+  Simulator: 
+    Ogre simulator: 
+    \- Use Ogre3D:               yes (ver 1.9.0)
+    \- Use OIS:                  yes (ver 1.3.0)
+    Coin simulator: 
+    \- Use Coin3D:               yes (ver 4.0.0)
+    \- Use SoWin:                no
+    \- Use SoXt:                 no
+    \- Use SoQt:                 no
+    \- Use Qt4:                  no
+    \- Use Qt3:                  no
+
+  Media I/O: 
+    Use JPEG:                    yes (ver 80)
+    Use PNG:                     yes (ver 1.2.54)
+    \- Use ZLIB:                 yes (ver 1.2.8)
+    Use OpenCV:                  yes (ver 3.4.2)
+
+  Real robots: 
+    Use Afma4:                   no
+    Use Afma6:                   no
+    Use Franka:                  yes
+    Use Viper650:                no
+    Use Viper850:                no
+    Use aria (Pioneer):          no
+    Use PTU46:                   no
+    Use Biclops PT:              no
+
+  GUI: 
+    Use X11:                     yes
+    Use GTK:                     no
+    Use OpenCV:                  yes (ver 3.4.2)
+    Use GDI:                     no
+    Use Direct3D:                no
+
+  Cameras: 
+    Use DC1394-2.x:              yes (ver 2.2.4)
+    Use CMU 1394:                no
+    Use V4L2:                    yes (ver 1.10.0)
+    Use directshow:              no
+    Use OpenCV:                  yes (ver 3.4.2)
+    Use Flycapture:              no
+    Use Pylon:                   no
+
+  RGB-D sensors: 
+    Use Realsense:               no
+    Use Realsense2:              yes (ver 2.14.0)
+    \- Use PCL:                  yes (ver 1.7.2)
+       \- Use VTK:               yes (ver 6.2.0)
+    Use Kinect:                  no
+    \- Use libfreenect:          no
+    \- Use libusb-1:             yes (ver 1.0.20)
+    \- Use pthread:              yes
+
+  F/T sensors: 
+    Use atidaq (built-in):       no
+    Use comedi:                  no
+
+  Detection: 
+    Use zbar:                    no
+    Use dmtx:                    yes (ver 0.7.4)
+    Use AprilTag (built-in):     yes (ver 0.9.8)
+
+  Misc: 
+    Use Clipper (built-in):      yes (ver 6.4.2)
+    Use XML2:                    yes (ver 2.9.3)
+
+  Optimization: 
+    Use OpenMP:                  yes
+    Use pthread:                 yes
+    Use pthread (built-in):      no
+    Use cxx11:                   yes
+
+  Documentation: 
+    Use doxygen:                 no
+
+  Tests and samples:
+    Tests:                       yes
+    Demos:                       yes
+    Examples:                    yes
+    Tutorials:                   yes
+
+  Install path:                  /usr/local
+
+==========================================================

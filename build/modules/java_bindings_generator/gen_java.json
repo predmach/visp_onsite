@@ -1,0 +1,11 @@
+{
+  "rootdir": "/home/predmach/visp-ws/visp",
+  "modules": [
+    { "name": "core", "location": "modules/core" },
+    { "name": "imgproc", "location": "modules/imgproc" },
+    { "name": "io", "location": "modules/io" }
+  ],
+  "files_remap": [
+    { "src": "modules/java/generator/android/java/org/visp/android/ViSPLoader.java.in", "target": "/home/predmach/visp-ws/visp/build/configured/modules/java/generator/android/java/org/visp/android/ViSPLoader.java" }
+  ]
+}

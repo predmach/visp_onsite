@@ -1,0 +1,181 @@
+//! \example tutorial-franka-acquire-calib-data.cpp
+#include <iostream>
+
+#include <visp3/core/vpCameraParameters.h>
+#include <visp3/core/vpXmlParserCamera.h>
+#include <visp3/gui/vpDisplayGDI.h>
+#include <visp3/gui/vpDisplayX.h>
+#include <visp3/io/vpImageIo.h>
+#include <visp3/sensor/vpRealSense2.h>
+#include <visp3/robot/vpRobotFranka.h>
+
+#include <visp3/sensor/vpRealSense2.h>
+#include <visp3/detection/vpDetectorAprilTag.h>
+#include <visp3/mbt/vpMbGenericTracker.h>
+
+typedef enum {
+  state_detection,
+  state_tracking,
+  state_quit
+} state_t;
+
+state_t detectAprilTag(const vpImage<unsigned char> &I, vpDetectorAprilTag &detector,
+                       double tagSize, const vpCameraParameters &cam, vpHomogeneousMatrix &cMo)
+{
+  std::vector<vpHomogeneousMatrix> cMo_vec;
+
+  // Detection
+  bool ret = detector.detect(I, tagSize, cam, cMo_vec);
+
+  // Display camera pose
+  for (size_t i = 0; i < cMo_vec.size(); i++) {
+    vpDisplay::displayFrame(I, cMo_vec[i], cam, tagSize / 2, vpColor::none, 3);
+  }
+
+  vpDisplay::displayText(I, 40, 20, "State: waiting tag detection", vpColor::red);
+
+  if (ret && detector.getNbObjects() > 0) { // if tag detected, we pick the first one
+    cMo = cMo_vec[0];
+    return state_tracking;
+  }
+
+  return state_detection;
+}
+
+
+#if defined(VISP_HAVE_REALSENSE2) && defined(VISP_HAVE_CPP11_COMPATIBILITY) && (defined(VISP_HAVE_X11) || defined(VISP_HAVE_GDI)) && defined(VISP_HAVE_FRANKA)
+
+int main(int argc, char **argv)
+{
+  try {
+
+    vpDetectorAprilTag::vpAprilTagFamily opt_tag_family = vpDetectorAprilTag::TAG_36h11;
+    double opt_tag_size = 0.08;
+    float opt_quad_decimate = 1.0;
+    int opt_nthreads = 1;
+    double opt_cube_size = 0.125; // 12.5cm by default
+    bool opt_use_texture = false;
+    bool opt_use_depth = false;
+    double opt_projection_error_threshold = 40.;
+
+    bool display_off = true;
+
+    std::string robot_ip = "192.168.1.102";
+
+    for (int i = 1; i < argc; i++) {
+      if (std::string(argv[i]) == "--ip" && i + 1 < argc) {
+        robot_ip = std::string(argv[i + 1]);
+      }
+      else if (std::string(argv[i]) == "--tag_size" && i + 1 < argc) {
+        opt_tag_size = atof(argv[i + 1]);
+      } else if (std::string(argv[i]) == "--quad_decimate" && i + 1 < argc) {
+        opt_quad_decimate = (float)atof(argv[i + 1]);
+      } else if (std::string(argv[i]) == "--nthreads" && i + 1 < argc) {
+        opt_nthreads = atoi(argv[i + 1]);
+      } else if (std::string(argv[i]) == "--display_off") {
+        display_off = true;
+      } else if (std::string(argv[i]) == "--tag_family" && i + 1 < argc) {
+        opt_tag_family = (vpDetectorAprilTag::vpAprilTagFamily)atoi(argv[i + 1]);
+      } else if (std::string(argv[i]) == "--cube_size" && i + 1 < argc) {
+        opt_cube_size = atof(argv[i + 1]);
+      } else if (std::string(argv[i]) == "--texture") {
+        opt_use_texture = true;
+      } else if (std::string(argv[i]) == "--depth") {
+        opt_use_depth = true;
+      } else if (std::string(argv[i]) == "--projection_error" && i + 1 < argc) {
+        opt_projection_error_threshold = atof(argv[i + 1]);
+      }
+      else if (std::string(argv[i]) == "--help" || std::string(argv[i]) == "-h") {
+        std::cout << argv[0] << " [--ip 192.168.1.1] [--help] [-h]"
+                             << "\n";
+        return EXIT_SUCCESS;
+      }
+    }
+
+    vpImage<unsigned char> I;
+
+    vpRobotFranka robot;
+    robot.connect(robot_ip);
+
+    vpRealSense2 g;
+    rs2::config config;
+    config.disable_stream(RS2_STREAM_DEPTH);
+    config.disable_stream(RS2_STREAM_INFRARED);
+    config.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_RGBA8, 30);
+    g.open(config);
+    g.acquire(I);
+
+    unsigned int width = I.getWidth();
+    unsigned int height = I.getHeight();
+
+    std::cout << "Image size: " << width << " x " << height << std::endl;
+    // Save intrinsics
+    vpCameraParameters cam;
+    vpXmlParserCamera xml_camera;
+    cam = g.getCameraParameters(RS2_STREAM_COLOR, vpCameraParameters::perspectiveProjWithDistortion);
+    xml_camera.save(cam, "camera.xml", "Camera", width, height);
+
+#if defined(VISP_HAVE_X11)
+    vpDisplayX dc(I, 10, 10, "Color image");
+#elif defined(VISP_HAVE_GDI)
+    vpDisplayGDI dc(I, 10, 10, "Color image");
+#endif
+
+    bool end = false;
+    unsigned cpt = 0;
+    while (! end) {
+      g.acquire(I);
+
+      vpDisplay::display(I);
+
+      vpDisplay::displayText(I, 15, 15, "Left click to acquire data", vpColor::red);
+      vpDisplay::displayText(I, 30, 15, "Right click to quit", vpColor::red);
+      vpMouseButton::vpMouseButtonType button;
+      if (vpDisplay::getClick(I, button, false)) {
+        if (button == vpMouseButton::button1) {
+          cpt ++;
+
+          vpPoseVector fPe;
+          robot.getPosition(vpRobot::END_EFFECTOR_FRAME, fPe);
+
+          std::stringstream ss_img, ss_pos;
+
+          ss_img << "image-" << cpt << ".png";
+          ss_pos << "pose_fPe_" << cpt << ".yaml";
+          std::cout << "Save: " << ss_img.str() << " and " << ss_pos.str() << std::endl;
+          vpImageIo::write(I, ss_img.str());
+          fPe.saveYAML(ss_pos.str(), fPe);
+        }
+        else if (button == vpMouseButton::button3) {
+          end = true;
+        }
+      }
+      vpDisplay::flush(I);
+
+    }
+  } catch (const vpException &e) {
+    std::cerr << "RealSense error " << e.what() << std::endl;
+  } catch (const std::exception &e) {
+    std::cerr << e.what() << std::endl;
+  }
+
+  return 0;
+}
+#else
+int main()
+{
+#if !defined(VISP_HAVE_REALSENSE2)
+  std::cout << "Install librealsense-2.x." << std::endl;
+#endif
+#if !defined(VISP_HAVE_CPP11_COMPATIBILITY)
+  std::cout << "Build ViSP with C++11 compiler flag (cmake -DUSE_CPP11=ON)." << std::endl;
+#endif
+#if !defined(VISP_HAVE_FRANKA)
+  std::cout << "Install libfranka." << std::endl;
+#endif
+
+  std::cout << "After installation of the missing 3rd parties, configure ViSP with cmake"
+            << " and build ViSP again." << std::endl;
+  return 0;
+}
+#endif
